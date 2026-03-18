@@ -3,7 +3,7 @@ import * as Tone from 'tone';
 
 const App = () => {
   const [started, setStarted] = useState(false);
-  const [balance, setBalance] = useState(569460);
+  const [balance, setBalance] = useState(1000000);
   const [years, setYears] = useState(26);
   const [bankRate, setBankRate] = useState(5.64);
   const [cashRate, setCashRate] = useState(4.1);
@@ -11,11 +11,16 @@ const App = () => {
   const [isSafe, setIsSafe] = useState(false);
   const synth = useRef(null);
   const dist = useRef(null);
-  const toLocale = (val) => Number(val).toLocaleString('en-AU');
 
   const toRaw = (str) => {
-    const num = str.replace(/[^0-9.]/g, '');
-    return num === '' ? 0 : parseFloat(num);
+    const sanitized = str.replace(/[^0-9.]/g, '');
+    if (sanitized === '') return ''; 
+    return parseFloat(sanitized);
+  };
+
+  const toLocale = (val) => {
+    if (val === '' || val === undefined || val === null) return '';
+    return Number(val).toLocaleString('en-AU');
   };
 
   const initAudio = async () => {
@@ -58,6 +63,7 @@ const App = () => {
   const newF = getRepayment(balance, projectedRate, years);
   const diff = newF - currentF;
   const ratio = (newF / income) * 100;
+  const leftOver = (income - newF);
 
   const triggerSafeWord = () => {
     setIsSafe(true);
@@ -126,7 +132,7 @@ const App = () => {
           </section>
 
           <section className="bg-zinc-900 p-4 border border-zinc-800">
-            <label className="block text-zinc-500 text-xs font-bold uppercase mb-1">🧂 Salt: Fortnightly Income</label>
+            <label className="block text-zinc-500 text-xs font-bold uppercase mb-1">Fortnightly Income</label>
             <div className="relative">
               <span className="absolute left-3 top-3 text-zinc-600 font-mono">$</span>
               <input 
@@ -136,9 +142,13 @@ const App = () => {
                 className="w-full bg-black border-2 border-zinc-800 p-3 pl-8 text-white font-mono focus:border-red-700 outline-none" 
               />
             </div>
-            <div className="mt-4 flex justify-between text-sm uppercase font-bold">
+            <div className="mt-4 flex justify-between text-sm uppercase font-bold text-white">
               <span>Income Devoured:</span>
               <span className={ratio > 40 ? 'text-red-500' : 'text-white'}>{ratio.toFixed(1)}%</span>
+            </div>
+            <div className="mt-4 flex justify-between text-sm uppercase font-bold text-white">
+            <span>Income "Left over":</span>
+              <span className={leftOver < 0 ? 'text-red-500' : 'text-white'}>${leftOver.toFixed(1)}</span>
             </div>
           </section>
 
